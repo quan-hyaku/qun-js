@@ -1,0 +1,25 @@
+node_modules/
+dist/
+
+# Local work
+PLAN.md
+notes/
+scratch/
+
+# AI assistants
+AGENTS.md
+CLAUDE.md
+CLAUDE.local.md
+GEMINI.md
+.cursorrules
+.cursorignore
+.cursor/
+.claude/
+.continue/
+.windsurf/
+.windsurfrules
+.aider*
+.amazonq/
+.junie/
+.codex/
+.github/copilot-instructions.md
