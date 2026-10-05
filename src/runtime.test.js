@@ -1,8 +1,9 @@
 import { expect, test } from "bun:test"
-import { signal } from "./runtime.js"
+import { computed, signal } from "./runtime.js"
 
 test("runtime module loads", () => {
   expect(signal).toBeDefined()
+  expect(computed).toBeDefined()
 })
 
 test("set notifies subscribers", () => {
@@ -49,4 +50,41 @@ test("subscribe returns an unsubscribe that stops further notifies", () => {
   count.set(2)
   expect(runs).toBe(1)
   expect(count.get()).toBe(2)
+})
+
+test("unread computed does not rerun when its source changes", () => {
+  const source = signal(0)
+  let runs = 0
+  computed(() => {
+    runs++
+    return source.get() * 2
+  })
+  source.set(1)
+  source.set(2)
+  expect(runs).toBe(0)
+})
+
+test("computed read twice with no write runs its function once", () => {
+  const source = signal(3)
+  let runs = 0
+  const doubled = computed(() => {
+    runs++
+    return source.get() * 2
+  })
+  expect(doubled.get()).toBe(6)
+  expect(doubled.get()).toBe(6)
+  expect(runs).toBe(1)
+})
+
+test("computed recomputes after a dependency write", () => {
+  const source = signal(1)
+  let runs = 0
+  const plusTen = computed(() => {
+    runs++
+    return source.get() + 10
+  })
+  expect(plusTen.get()).toBe(11)
+  source.set(2)
+  expect(plusTen.get()).toBe(12)
+  expect(runs).toBe(2)
 })
