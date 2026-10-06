@@ -1,9 +1,10 @@
 import { expect, test } from "bun:test"
-import { computed, signal } from "./runtime.js"
+import { computed, effect, signal } from "./runtime.js"
 
 test("runtime module loads", () => {
   expect(signal).toBeDefined()
   expect(computed).toBeDefined()
+  expect(effect).toBeDefined()
 })
 
 test("set notifies subscribers", () => {
@@ -87,4 +88,45 @@ test("computed recomputes after a dependency write", () => {
   source.set(2)
   expect(plusTen.get()).toBe(12)
   expect(runs).toBe(2)
+})
+
+test("effect runs once on create", () => {
+  const count = signal(0)
+  let runs = 0
+  effect(() => {
+    runs++
+    count.get()
+  })
+  expect(runs).toBe(1)
+})
+
+test("after show is false, setting price does not rerun the effect; setting show does", () => {
+  const show = signal(true)
+  const price = signal(10)
+  let runs = 0
+  effect(() => {
+    runs++
+    if (show.get()) price.get()
+  })
+  expect(runs).toBe(1)
+  show.set(false)
+  expect(runs).toBe(2)
+  price.set(99)
+  expect(runs).toBe(2)
+  show.set(true)
+  expect(runs).toBe(3)
+  price.set(100)
+  expect(runs).toBe(4)
+})
+
+test("effect that re-subscribes during notify runs once per set", () => {
+  const a = signal(0)
+  let runs = 0
+  effect(() => {
+    runs++
+    a.get()
+  })
+  a.set(1)
+  a.set(2)
+  expect(runs).toBe(3)
 })
